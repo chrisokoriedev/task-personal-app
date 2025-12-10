@@ -30,12 +30,10 @@ class MainApp extends StatelessWidget {
           primary: Colors.blue.shade600,
           secondary: Colors.blue.shade400,
           surface: Colors.white,
-          background: Colors.grey.shade50,
           error: Colors.red.shade600,
           onPrimary: Colors.white,
           onSecondary: Colors.white,
           onSurface: Colors.grey.shade900,
-          onBackground: Colors.grey.shade900,
           onError: Colors.white,
         ),
         scaffoldBackgroundColor: Colors.grey.shade50,
@@ -45,7 +43,7 @@ class MainApp extends StatelessWidget {
           foregroundColor: Colors.grey.shade900,
           iconTheme: IconThemeData(color: Colors.grey.shade700),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

@@ -32,6 +32,8 @@ mixin _$TaskModel {
   DateTime get createdAt => throw _privateConstructorUsedError;
   @HiveField(5)
   DateTime get updatedAt => throw _privateConstructorUsedError;
+  @HiveField(6)
+  DateTime? get dueDate => throw _privateConstructorUsedError;
 
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
   @JsonKey(ignore: true)
@@ -50,7 +52,8 @@ abstract class $TaskModelCopyWith<$Res> {
       @HiveField(2) String description,
       @HiveField(3) bool isCompleted,
       @HiveField(4) DateTime createdAt,
-      @HiveField(5) DateTime updatedAt});
+      @HiveField(5) DateTime updatedAt,
+      @HiveField(6) DateTime? dueDate});
 }
 
 /// @nodoc
@@ -72,6 +75,7 @@ class _$TaskModelCopyWithImpl<$Res, $Val extends TaskModel>
     Object? isCompleted = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? dueDate = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -98,6 +102,10 @@ class _$TaskModelCopyWithImpl<$Res, $Val extends TaskModel>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      dueDate: freezed == dueDate
+          ? _value.dueDate
+          : dueDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -116,7 +124,8 @@ abstract class _$$TaskModelImplCopyWith<$Res>
       @HiveField(2) String description,
       @HiveField(3) bool isCompleted,
       @HiveField(4) DateTime createdAt,
-      @HiveField(5) DateTime updatedAt});
+      @HiveField(5) DateTime updatedAt,
+      @HiveField(6) DateTime? dueDate});
 }
 
 /// @nodoc
@@ -136,6 +145,7 @@ class __$$TaskModelImplCopyWithImpl<$Res>
     Object? isCompleted = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? dueDate = freezed,
   }) {
     return _then(_$TaskModelImpl(
       id: null == id
@@ -162,6 +172,10 @@ class __$$TaskModelImplCopyWithImpl<$Res>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      dueDate: freezed == dueDate
+          ? _value.dueDate
+          : dueDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -175,7 +189,8 @@ class _$TaskModelImpl extends _TaskModel {
       @HiveField(2) required this.description,
       @HiveField(3) required this.isCompleted,
       @HiveField(4) required this.createdAt,
-      @HiveField(5) required this.updatedAt})
+      @HiveField(5) required this.updatedAt,
+      @HiveField(6) this.dueDate})
       : super._();
 
   factory _$TaskModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -199,10 +214,13 @@ class _$TaskModelImpl extends _TaskModel {
   @override
   @HiveField(5)
   final DateTime updatedAt;
+  @override
+  @HiveField(6)
+  final DateTime? dueDate;
 
   @override
   String toString() {
-    return 'TaskModel(id: $id, title: $title, description: $description, isCompleted: $isCompleted, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'TaskModel(id: $id, title: $title, description: $description, isCompleted: $isCompleted, createdAt: $createdAt, updatedAt: $updatedAt, dueDate: $dueDate)';
   }
 
   @override
@@ -219,13 +237,14 @@ class _$TaskModelImpl extends _TaskModel {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+                other.updatedAt == updatedAt) &&
+            (identical(other.dueDate, dueDate) || other.dueDate == dueDate));
   }
 
   @JsonKey(ignore: true)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, title, description, isCompleted, createdAt, updatedAt);
+  int get hashCode => Object.hash(runtimeType, id, title, description,
+      isCompleted, createdAt, updatedAt, dueDate);
 
   @JsonKey(ignore: true)
   @override
@@ -248,7 +267,8 @@ abstract class _TaskModel extends TaskModel {
       @HiveField(2) required final String description,
       @HiveField(3) required final bool isCompleted,
       @HiveField(4) required final DateTime createdAt,
-      @HiveField(5) required final DateTime updatedAt}) = _$TaskModelImpl;
+      @HiveField(5) required final DateTime updatedAt,
+      @HiveField(6) final DateTime? dueDate}) = _$TaskModelImpl;
   const _TaskModel._() : super._();
 
   factory _TaskModel.fromJson(Map<String, dynamic> json) =
@@ -272,6 +292,9 @@ abstract class _TaskModel extends TaskModel {
   @override
   @HiveField(5)
   DateTime get updatedAt;
+  @override
+  @HiveField(6)
+  DateTime? get dueDate;
   @override
   @JsonKey(ignore: true)
   _$$TaskModelImplCopyWith<_$TaskModelImpl> get copyWith =>

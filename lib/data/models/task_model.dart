@@ -20,6 +20,7 @@ class TaskModel with _$TaskModel {
     @HiveField(3) required bool isCompleted,
     @HiveField(4) required DateTime createdAt,
     @HiveField(5) required DateTime updatedAt,
+    @HiveField(6) DateTime? dueDate,
   }) = _TaskModel;
 
   const TaskModel._();
@@ -36,6 +37,7 @@ class TaskModel with _$TaskModel {
       isCompleted: task.isCompleted,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
+      dueDate: task.dueDate,
     );
   }
 
@@ -48,6 +50,7 @@ class TaskModel with _$TaskModel {
       isCompleted: isCompleted,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      dueDate: dueDate,
     );
   }
 }

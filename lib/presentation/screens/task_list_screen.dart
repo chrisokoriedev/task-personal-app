@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/task_providers.dart';
@@ -5,6 +6,7 @@ import '../widgets/task_item.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/task_search_bar.dart';
 import 'add_edit_task_screen.dart';
+import 'completed_tasks_screen.dart';
 import '../../domain/entities/task.dart';
 
 /// Main screen displaying the list of tasks.
@@ -190,56 +192,116 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _navigateToAddTask,
-                  icon: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                    child: const Icon(
-                      Icons.add,
-                      size: 16,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  label: const Text(
-                    'Create',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey.shade200,
-                    foregroundColor: Colors.grey.shade900,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+      bottomNavigationBar: ClipRRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.85),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, -2),
                 ),
+              ],
+            ),
+            child: SafeArea(
+              child: Row(
+                children: [
+                  // Smaller Create button
+                  ElevatedButton.icon(
+                    onPressed: _navigateToAddTask,
+                    icon: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                      child: const Icon(
+                        Icons.add,
+                        size: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    label: const Text(
+                      'Create',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey.shade200,
+                      foregroundColor: Colors.grey.shade900,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const Spacer(),
+                  // Done tasks icon
+                  IconButton(
+                    onPressed: () {
+                      // Navigate to completed tasks screen
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const CompletedTasksScreen(),
+                        ),
+                      );
+                    },
+                    icon: Stack(
+                      children: [
+                        // Stack of cards icon
+                        Positioned(
+                          left: 0,
+                          top: 4,
+                          child: Icon(
+                            Icons.assignment,
+                            color: Colors.grey.shade400,
+                            size: 20,
+                          ),
+                        ),
+                        Positioned(
+                          left: 2,
+                          top: 2,
+                          child: Icon(
+                            Icons.assignment,
+                            color: Colors.grey.shade500,
+                            size: 20,
+                          ),
+                        ),
+                        Positioned(
+                          left: 4,
+                          top: 0,
+                          child: Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Icon(
+                              Icons.check,
+                              size: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    tooltip: 'Completed Tasks',
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

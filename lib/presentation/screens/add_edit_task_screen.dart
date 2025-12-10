@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../providers/task_providers.dart';
 import '../../domain/entities/task.dart';
 
@@ -17,6 +18,7 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
+  DateTime? _selectedDate;
   bool _isLoading = false;
 
   @override
@@ -25,6 +27,7 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
     _titleController = TextEditingController(text: widget.task?.title ?? '');
     _descriptionController =
         TextEditingController(text: widget.task?.description ?? '');
+    _selectedDate = widget.task?.dueDate;
   }
 
   @override
@@ -52,6 +55,7 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
         final newTask = Task.create(
           title: title,
           description: description,
+          dueDate: _selectedDate,
         );
         await ref.read(taskListProvider.notifier).createTask(newTask);
       } else {
@@ -59,7 +63,7 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
         final updatedTask = widget.task!.updateContent(
           title: title,
           description: description,
-        );
+        ).copyWith(dueDate: _selectedDate);
         await ref.read(taskListProvider.notifier).updateTask(updatedTask);
       }
 
@@ -169,6 +173,55 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
                 return null;
               },
             ),
+            const SizedBox(height: 20),
+            // Date picker
+            InkWell(
+              onTap: _isLoading ? null : _selectDate,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today,
+                      color: Colors.grey.shade600,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _selectedDate == null
+                            ? 'Select due date (optional)'
+                            : 'Due: ${DateFormat('MMM d, yyyy').format(_selectedDate!)}',
+                        style: TextStyle(
+                          color: _selectedDate == null
+                              ? Colors.grey.shade400
+                              : Colors.grey.shade900,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    if (_selectedDate != null)
+                      IconButton(
+                        icon: Icon(Icons.clear, color: Colors.grey.shade600, size: 20),
+                        onPressed: _isLoading
+                            ? null
+                            : () {
+                                setState(() {
+                                  _selectedDate = null;
+                                });
+                              },
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 32),
             ElevatedButton(
               onPressed: _isLoading ? null : _handleSave,
@@ -201,6 +254,34 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _selectDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Theme.of(context).colorScheme.primary,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.grey.shade900,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
   }
 }
 

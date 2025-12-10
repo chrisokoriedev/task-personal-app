@@ -13,6 +13,7 @@ class Task with _$Task {
     required bool isCompleted,
     required DateTime createdAt,
     required DateTime updatedAt,
+    DateTime? dueDate,
   }) = _Task;
 
   const Task._();
@@ -21,6 +22,7 @@ class Task with _$Task {
   factory Task.create({
     required String title,
     required String description,
+    DateTime? dueDate,
   }) {
     final now = DateTime.now();
     return Task(
@@ -30,6 +32,7 @@ class Task with _$Task {
       isCompleted: false,
       createdAt: now,
       updatedAt: now,
+      dueDate: dueDate,
     );
   }
 

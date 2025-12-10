@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../../domain/entities/task.dart';
 
 /// Widget representing a single task item in the list.
@@ -28,7 +29,7 @@ class TaskItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -80,6 +81,7 @@ class TaskItem extends StatelessWidget {
                         task.title,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
+                          fontSize: 16,
                           decoration: isCompleted
                               ? TextDecoration.lineThrough
                               : TextDecoration.none,
@@ -88,11 +90,12 @@ class TaskItem extends StatelessWidget {
                               : Colors.grey.shade900,
                         ),
                       ),
-                      if (task.description.isNotEmpty) ...[
-                        const SizedBox(height: 4),
+                      const SizedBox(height: 6),
+                      if (task.description.isNotEmpty)
                         Text(
                           task.description,
                           style: theme.textTheme.bodySmall?.copyWith(
+                            fontSize: 13,
                             color: isCompleted
                                 ? Colors.grey.shade400
                                 : Colors.grey.shade600,
@@ -100,8 +103,27 @@ class TaskItem extends StatelessWidget {
                                 ? TextDecoration.lineThrough
                                 : TextDecoration.none,
                           ),
-                          maxLines: 2,
+                          maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                        ),
+                      if (task.dueDate != null) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              size: 12,
+                              color: Colors.grey.shade500,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatDate(task.dueDate!),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontSize: 12,
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ],
@@ -143,6 +165,22 @@ class TaskItem extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final taskDate = DateTime(date.year, date.month, date.day);
+    
+    if (taskDate == today) {
+      return 'Today';
+    } else if (taskDate == today.add(const Duration(days: 1))) {
+      return 'Tomorrow';
+    } else if (taskDate == today.subtract(const Duration(days: 1))) {
+      return 'Yesterday';
+    } else {
+      return DateFormat('MMM d, yyyy').format(date);
+    }
   }
 }
 

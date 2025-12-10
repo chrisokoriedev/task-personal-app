@@ -22,6 +22,7 @@ mixin _$Task {
   bool get isCompleted => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
+  DateTime? get dueDate => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $TaskCopyWith<Task> get copyWith => throw _privateConstructorUsedError;
@@ -38,7 +39,8 @@ abstract class $TaskCopyWith<$Res> {
       String description,
       bool isCompleted,
       DateTime createdAt,
-      DateTime updatedAt});
+      DateTime updatedAt,
+      DateTime? dueDate});
 }
 
 /// @nodoc
@@ -60,6 +62,7 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
     Object? isCompleted = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? dueDate = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -86,6 +89,10 @@ class _$TaskCopyWithImpl<$Res, $Val extends Task>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      dueDate: freezed == dueDate
+          ? _value.dueDate
+          : dueDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -103,7 +110,8 @@ abstract class _$$TaskImplCopyWith<$Res> implements $TaskCopyWith<$Res> {
       String description,
       bool isCompleted,
       DateTime createdAt,
-      DateTime updatedAt});
+      DateTime updatedAt,
+      DateTime? dueDate});
 }
 
 /// @nodoc
@@ -122,6 +130,7 @@ class __$$TaskImplCopyWithImpl<$Res>
     Object? isCompleted = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? dueDate = freezed,
   }) {
     return _then(_$TaskImpl(
       id: null == id
@@ -148,6 +157,10 @@ class __$$TaskImplCopyWithImpl<$Res>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      dueDate: freezed == dueDate
+          ? _value.dueDate
+          : dueDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -161,7 +174,8 @@ class _$TaskImpl extends _Task {
       required this.description,
       required this.isCompleted,
       required this.createdAt,
-      required this.updatedAt})
+      required this.updatedAt,
+      this.dueDate})
       : super._();
 
   @override
@@ -176,10 +190,12 @@ class _$TaskImpl extends _Task {
   final DateTime createdAt;
   @override
   final DateTime updatedAt;
+  @override
+  final DateTime? dueDate;
 
   @override
   String toString() {
-    return 'Task(id: $id, title: $title, description: $description, isCompleted: $isCompleted, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Task(id: $id, title: $title, description: $description, isCompleted: $isCompleted, createdAt: $createdAt, updatedAt: $updatedAt, dueDate: $dueDate)';
   }
 
   @override
@@ -196,12 +212,13 @@ class _$TaskImpl extends _Task {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+                other.updatedAt == updatedAt) &&
+            (identical(other.dueDate, dueDate) || other.dueDate == dueDate));
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, id, title, description, isCompleted, createdAt, updatedAt);
+  int get hashCode => Object.hash(runtimeType, id, title, description,
+      isCompleted, createdAt, updatedAt, dueDate);
 
   @JsonKey(ignore: true)
   @override
@@ -217,7 +234,8 @@ abstract class _Task extends Task {
       required final String description,
       required final bool isCompleted,
       required final DateTime createdAt,
-      required final DateTime updatedAt}) = _$TaskImpl;
+      required final DateTime updatedAt,
+      final DateTime? dueDate}) = _$TaskImpl;
   const _Task._() : super._();
 
   @override
@@ -232,6 +250,8 @@ abstract class _Task extends Task {
   DateTime get createdAt;
   @override
   DateTime get updatedAt;
+  @override
+  DateTime? get dueDate;
   @override
   @JsonKey(ignore: true)
   _$$TaskImplCopyWith<_$TaskImpl> get copyWith =>
