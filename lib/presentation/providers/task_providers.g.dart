@@ -42,7 +42,41 @@ final taskRepositoryProvider = AutoDisposeProvider<TaskRepository>.internal(
 );
 
 typedef TaskRepositoryRef = AutoDisposeProviderRef<TaskRepository>;
-String _$taskListHash() => r'54a76754c358a8fa5a66fece9fec99a06d1848fe';
+String _$completedTasksCountHash() =>
+    r'6d375bc336bc6afb5276f90573958f548b09133d';
+
+/// Provider for completed tasks count.
+///
+/// Copied from [completedTasksCount].
+@ProviderFor(completedTasksCount)
+final completedTasksCountProvider = AutoDisposeFutureProvider<int>.internal(
+  completedTasksCount,
+  name: r'completedTasksCountProvider',
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$completedTasksCountHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef CompletedTasksCountRef = AutoDisposeFutureProviderRef<int>;
+String _$allTasksHash() => r'699aca699249c2072ba4802104b3566cf80b84b1';
+
+/// Provider for all tasks (including completed) - used for search.
+///
+/// Copied from [allTasks].
+@ProviderFor(allTasks)
+final allTasksProvider = AutoDisposeFutureProvider<List<Task>>.internal(
+  allTasks,
+  name: r'allTasksProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$allTasksHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+typedef AllTasksRef = AutoDisposeFutureProviderRef<List<Task>>;
+String _$taskListHash() => r'8eb875878fbf3411647adf5dce49f3ce819d949b';
 
 /// Provider for all tasks.
 /// Automatically refreshes when tasks are modified.
@@ -60,7 +94,7 @@ final taskListProvider =
 );
 
 typedef _$TaskList = AutoDisposeAsyncNotifier<List<Task>>;
-String _$taskSearchHash() => r'c5ae372d004d8ee5d3cd7d8bd05e1e9e8a841548';
+String _$taskSearchHash() => r'24662492665a973ce6b26736a1e0ef86de2c84d1';
 
 /// Provider for searching tasks.
 ///

@@ -57,15 +57,24 @@ class CompletedTasksScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 8),
             itemBuilder: (context, index) {
               final task = completedTasks[index];
-              return TaskItem(
-                task: task,
-                onTap: () {},
-                onToggleComplete: () {
-                  ref
-                      .read(taskListProvider.notifier)
-                      .toggleTaskCompletion(task);
-                },
-                onDelete: () async {
+              return Dismissible(
+                key: Key(task.id),
+                direction: DismissDirection.endToStart,
+                background: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade400,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.only(right: 20),
+                  child: const Icon(
+                    Icons.delete,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+                confirmDismiss: (direction) async {
                   final confirmed = await showDialog<bool>(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -96,9 +105,58 @@ class CompletedTasksScreen extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Task deleted successfully')),
                       );
+                      return true;
                     }
+                    return false;
                   }
+                  return false;
                 },
+                onDismissed: (direction) {
+                  // Task is already deleted in confirmDismiss
+                },
+                child: TaskItem(
+                  task: task,
+                  onTap: () {},
+                  onToggleComplete: () {
+                    ref
+                        .read(taskListProvider.notifier)
+                        .toggleTaskCompletion(task);
+                  },
+                  onDelete: () async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Delete Task'),
+                        content: Text('Are you sure you want to delete "${task.title}"?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.red,
+                            ),
+                            child: const Text('Delete'),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirmed == true && context.mounted) {
+                      final success = await ref
+                          .read(taskListProvider.notifier)
+                          .deleteTask(task.id);
+
+                      if (success && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Task deleted successfully')),
+                        );
+                      }
+                    }
+                  },
+                ),
               );
             },
           );
@@ -117,7 +175,7 @@ class CompletedTasksScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  ref.read(taskListProvider.notifier).refresh();
+                  ref.invalidate(allTasksProvider);
                 },
                 child: const Text('Retry'),
               ),
