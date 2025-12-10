@@ -26,7 +26,9 @@ class TaskList extends _$TaskList {
   @override
   Future<List<Task>> build() async {
     final repository = ref.watch(taskRepositoryProvider);
-    return repository.getAllTasks();
+    final allTasks = await repository.getAllTasks();
+    // Filter out completed tasks - only show incomplete tasks
+    return allTasks.where((task) => !task.isCompleted).toList();
   }
 
   /// Refreshes the task list.
@@ -85,9 +87,13 @@ class TaskSearch extends _$TaskSearch {
     state = await AsyncValue.guard(() async {
       final repository = ref.read(taskRepositoryProvider);
       if (query.trim().isEmpty) {
-        return repository.getAllTasks();
+        // Return only incomplete tasks when search is empty
+        final allTasks = await repository.getAllTasks();
+        return allTasks.where((task) => !task.isCompleted).toList();
       }
-      return repository.searchTasks(query);
+      final results = await repository.searchTasks(query);
+      // Filter out completed tasks from search results
+      return results.where((task) => !task.isCompleted).toList();
     });
   }
 
@@ -95,5 +101,20 @@ class TaskSearch extends _$TaskSearch {
   Future<void> clearSearch() async {
     await search('');
   }
+}
+
+/// Provider for completed tasks count.
+@riverpod
+Future<int> completedTasksCount(CompletedTasksCountRef ref) async {
+  final repository = ref.watch(taskRepositoryProvider);
+  final allTasks = await repository.getAllTasks();
+  return allTasks.where((task) => task.isCompleted).length;
+}
+
+/// Provider for all tasks (including completed) - used for search.
+@riverpod
+Future<List<Task>> allTasks(AllTasksRef ref) async {
+  final repository = ref.watch(taskRepositoryProvider);
+  return repository.getAllTasks();
 }
 

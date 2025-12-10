@@ -10,7 +10,7 @@ class CompletedTasksScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final taskListAsync = ref.watch(taskListProvider);
+    final allTasksAsync = ref.watch(allTasksProvider);
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
@@ -26,9 +26,9 @@ class CompletedTasksScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: taskListAsync.when(
-        data: (tasks) {
-          final completedTasks = tasks.where((t) => t.isCompleted).toList();
+      body: allTasksAsync.when(
+        data: (allTasks) {
+          final completedTasks = allTasks.where((t) => t.isCompleted).toList();
 
           if (completedTasks.isEmpty) {
             return Center(

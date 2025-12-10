@@ -41,7 +41,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     });
   }
 
-  Future<void> _handleDeleteTask(Task task) async {
+  Future<bool> _handleDeleteTask(Task task) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -72,12 +72,15 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Task deleted successfully')),
         );
+        return true;
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to delete task')),
         );
+        return false;
       }
     }
+    return false;
   }
 
   void _navigateToAddTask() {
@@ -150,15 +153,39 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               itemBuilder: (context, index) {
                 final task = tasks[index];
-                return TaskItem(
-                  task: task,
-                  onTap: () => _navigateToEditTask(task),
-                  onToggleComplete: () {
-                    ref
-                        .read(taskListProvider.notifier)
-                        .toggleTaskCompletion(task);
+                return Dismissible(
+                  key: Key(task.id),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade400,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 20),
+                    child: const Icon(
+                      Icons.delete,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  confirmDismiss: (direction) async {
+                    return await _handleDeleteTask(task);
                   },
-                  onDelete: () => _handleDeleteTask(task),
+                  onDismissed: (direction) {
+                    // Task is already deleted in confirmDismiss
+                  },
+                  child: TaskItem(
+                    task: task,
+                    onTap: () => _navigateToEditTask(task),
+                    onToggleComplete: () {
+                      ref
+                          .read(taskListProvider.notifier)
+                          .toggleTaskCompletion(task);
+                    },
+                    onDelete: () => _handleDeleteTask(task),
+                  ),
                 );
               },
             ),
@@ -247,57 +274,153 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                     ),
                   ),
                   const Spacer(),
-                  // Done tasks icon
-                  IconButton(
-                    onPressed: () {
-                      // Navigate to completed tasks screen
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const CompletedTasksScreen(),
+                  // Done tasks icon with badge
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final completedCountAsync = ref.watch(completedTasksCountProvider);
+                      return completedCountAsync.when(
+                        data: (count) => Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            IconButton(
+                              onPressed: () {
+                                // Navigate to completed tasks screen
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => const CompletedTasksScreen(),
+                                  ),
+                                );
+                              },
+                              icon: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    // Bottom card
+                                    Positioned(
+                                      left: 4,
+                                      top: 6,
+                                      child: Container(
+                                        width: 16,
+                                        height: 16,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey.shade300,
+                                          borderRadius: BorderRadius.circular(3),
+                                          border: Border.all(
+                                            color: Colors.grey.shade400,
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    // Middle card
+                                    Positioned(
+                                      left: 2,
+                                      top: 3,
+                                      child: Container(
+                                        width: 16,
+                                        height: 16,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey.shade200,
+                                          borderRadius: BorderRadius.circular(3),
+                                          border: Border.all(
+                                            color: Colors.grey.shade400,
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    // Top card with checkmark
+                                    Positioned(
+                                      left: 0,
+                                      top: 0,
+                                      child: Container(
+                                        width: 16,
+                                        height: 16,
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey.shade100,
+                                          borderRadius: BorderRadius.circular(3),
+                                          border: Border.all(
+                                            color: Colors.grey.shade400,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          Icons.check,
+                                          size: 10,
+                                          color: Colors.grey.shade700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              tooltip: 'Completed Tasks',
+                            ),
+                            // Badge showing count
+                            if (count > 0)
+                              Positioned(
+                                right: 4,
+                                top: 4,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.shade600,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  constraints: const BoxConstraints(
+                                    minWidth: 18,
+                                    minHeight: 18,
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      count > 99 ? '99+' : count.toString(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                        loading: () => IconButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const CompletedTasksScreen(),
+                              ),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.assignment,
+                            color: Colors.grey.shade600,
+                          ),
+                          tooltip: 'Completed Tasks',
+                        ),
+                        error: (_, __) => IconButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const CompletedTasksScreen(),
+                              ),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.assignment,
+                            color: Colors.grey.shade600,
+                          ),
+                          tooltip: 'Completed Tasks',
                         ),
                       );
                     },
-                    icon: Stack(
-                      children: [
-                        // Stack of cards icon
-                        Positioned(
-                          left: 0,
-                          top: 4,
-                          child: Icon(
-                            Icons.assignment,
-                            color: Colors.grey.shade400,
-                            size: 20,
-                          ),
-                        ),
-                        Positioned(
-                          left: 2,
-                          top: 2,
-                          child: Icon(
-                            Icons.assignment,
-                            color: Colors.grey.shade500,
-                            size: 20,
-                          ),
-                        ),
-                        Positioned(
-                          left: 4,
-                          top: 0,
-                          child: Container(
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade300,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Icon(
-                              Icons.check,
-                              size: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    tooltip: 'Completed Tasks',
                   ),
                 ],
               ),
