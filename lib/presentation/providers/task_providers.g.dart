@@ -7,7 +7,7 @@ part of 'task_providers.dart';
 // **************************************************************************
 
 String _$localTaskDataSourceHash() =>
-    r'155b2eab608d25ea752c48a16c4281d5abfe11cd';
+    r'3fe6a2ca544a866ca618d28a327b5013531f902f';
 
 /// Provider for LocalTaskDataSource.
 ///
@@ -43,11 +43,9 @@ final taskRepositoryProvider = AutoDisposeProvider<TaskRepository>.internal(
 
 typedef TaskRepositoryRef = AutoDisposeProviderRef<TaskRepository>;
 String _$completedTasksCountHash() =>
-    r'0385850d31bcfdd9186394d01497ecd7a1563f1b';
+    r'6d375bc336bc6afb5276f90573958f548b09133d';
 
-/// Provider for completed tasks count.
-///
-/// Copied from [completedTasksCount].
+/// See also [completedTasksCount].
 @ProviderFor(completedTasksCount)
 final completedTasksCountProvider = AutoDisposeFutureProvider<int>.internal(
   completedTasksCount,
@@ -60,11 +58,9 @@ final completedTasksCountProvider = AutoDisposeFutureProvider<int>.internal(
 );
 
 typedef CompletedTasksCountRef = AutoDisposeFutureProviderRef<int>;
-String _$allTasksHash() => r'e4e1773d4a1ea1ce679276a8d5f6af787be7b9eb';
+String _$allTasksHash() => r'699aca699249c2072ba4802104b3566cf80b84b1';
 
-/// Provider for all tasks (including completed) - used for search.
-///
-/// Copied from [allTasks].
+/// See also [allTasks].
 @ProviderFor(allTasks)
 final allTasksProvider = AutoDisposeFutureProvider<List<Task>>.internal(
   allTasks,

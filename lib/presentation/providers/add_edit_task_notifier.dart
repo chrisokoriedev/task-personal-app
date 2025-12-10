@@ -76,6 +76,10 @@ class AddEditTaskNotifier extends _$AddEditTaskNotifier {
     state = state.copyWith(isLoading: true, errors: []);
 
     try {
+      // Capture the notifier reference before async operation
+      // to avoid using ref after disposal
+      final taskListNotifier = ref.read(taskListProvider.notifier);
+      
       final title = state.title.trim();
       final description = state.description.trim();
 
@@ -86,7 +90,7 @@ class AddEditTaskNotifier extends _$AddEditTaskNotifier {
           description: description,
         ).copyWith(dueDate: state.dueDate);
         
-        await ref.read(taskListProvider.notifier).updateTask(updatedTask);
+        await taskListNotifier.updateTask(updatedTask);
       } else {
         // Create new task
         final newTask = Task.create(
@@ -94,17 +98,26 @@ class AddEditTaskNotifier extends _$AddEditTaskNotifier {
           description: description,
           dueDate: state.dueDate,
         );
-        await ref.read(taskListProvider.notifier).createTask(newTask);
+        await taskListNotifier.createTask(newTask);
       }
 
-      state = state.copyWith(isLoading: false, isSuccess: true);
+      try {
+        state = state.copyWith(isLoading: false, isSuccess: true);
+      } catch (_) {
+        return false;
+      }
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errors: [e.toString()],
-        isSuccess: false,
-      );
+      // Update state - wrap in try-catch in case provider was disposed
+      try {
+        state = state.copyWith(
+          isLoading: false,
+          errors: [e.toString()],
+          isSuccess: false,
+        );
+      } catch (_) {
+        // Provider was disposed
+      }
       return false;
     }
   }

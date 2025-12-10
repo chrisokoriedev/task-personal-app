@@ -7,7 +7,7 @@ part of 'add_edit_task_notifier.dart';
 // **************************************************************************
 
 String _$addEditTaskNotifierHash() =>
-    r'b3292931c7d1e3eeb79bfd843adf18ffdbae170c';
+    r'70cb200a999adf727ac99ea22551bd425b4a0a69';
 
 /// Notifier for managing add/edit task screen state and operations.
 ///

@@ -9,7 +9,7 @@ part 'task_providers.g.dart';
 
 /// Provider for LocalTaskDataSource.
 @riverpod
-LocalTaskDataSource localTaskDataSource(Ref ref) {
+LocalTaskDataSource localTaskDataSource(LocalTaskDataSourceRef ref) {
   return LocalTaskDataSource();
 }
 
@@ -106,18 +106,15 @@ class TaskSearch extends _$TaskSearch {
   }
 }
 
-/// Provider for completed tasks count.
 @riverpod
-Future<int> completedTasksCount(Ref ref) async {
+Future<int> completedTasksCount(CompletedTasksCountRef ref) async {
   final repository = ref.watch(taskRepositoryProvider);
   final allTasks = await repository.getAllTasks();
   return allTasks.where((task) => task.isCompleted).length;
 }
 
-/// Provider for all tasks (including completed) - used for search.
 @riverpod
-Future<List<Task>> allTasks(Ref ref) async {
+Future<List<Task>> allTasks(AllTasksRef ref) async {
   final repository = ref.watch(taskRepositoryProvider);
   return repository.getAllTasks();
 }
-
