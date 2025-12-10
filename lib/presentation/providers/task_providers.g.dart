@@ -76,7 +76,7 @@ final allTasksProvider = AutoDisposeFutureProvider<List<Task>>.internal(
 );
 
 typedef AllTasksRef = AutoDisposeFutureProviderRef<List<Task>>;
-String _$taskListHash() => r'8eb875878fbf3411647adf5dce49f3ce819d949b';
+String _$taskListHash() => r'4f0ba930090e86aa11a14726390ad4117d3f40fe';
 
 /// Provider for all tasks.
 /// Automatically refreshes when tasks are modified.
@@ -112,4 +112,4 @@ final taskSearchProvider =
 
 typedef _$TaskSearch = AutoDisposeAsyncNotifier<List<Task>>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, inference_failure_on_uninitialized_variable, inference_failure_on_function_return_type, inference_failure_on_untyped_parameter, deprecated_member_use_from_same_package
