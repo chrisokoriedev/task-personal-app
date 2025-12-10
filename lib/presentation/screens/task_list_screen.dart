@@ -144,7 +144,6 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,

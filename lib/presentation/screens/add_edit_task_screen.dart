@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../providers/task_providers.dart';
+import '../providers/add_edit_task_notifier.dart';
 import '../../domain/entities/task.dart';
 
 /// Screen for adding new tasks or editing existing ones.
@@ -18,22 +18,26 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
-  DateTime? _selectedDate;
-  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.task?.title ?? '');
-    _descriptionController =
-        TextEditingController(text: widget.task?.description ?? '');
-    _selectedDate = widget.task?.dueDate;
+    _titleController = TextEditingController();
+    _descriptionController = TextEditingController();
+
+    // Initialize notifier with task data after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(addEditTaskNotifierProvider.notifier)
+          .initializeWithTask(widget.task);
+    });
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    ref.read(addEditTaskNotifierProvider.notifier).reset();
     super.dispose();
   }
 
@@ -42,71 +46,54 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    final notifier = ref.read(addEditTaskNotifierProvider.notifier);
+    final success = await notifier.saveTask();
 
-    try {
-      final title = _titleController.text.trim();
-      final description = _descriptionController.text.trim();
+    if (!mounted) return;
 
-      if (widget.task == null) {
-        // Create new task
-        final newTask = Task.create(
-          title: title,
-          description: description,
-          dueDate: _selectedDate,
-        );
-        await ref.read(taskListProvider.notifier).createTask(newTask);
-      } else {
-        // Update existing task
-        final updatedTask = widget.task!.updateContent(
-          title: title,
-          description: description,
-        ).copyWith(dueDate: _selectedDate);
-        await ref.read(taskListProvider.notifier).updateTask(updatedTask);
-      }
-
-      if (mounted) {
-        Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              widget.task == null
-                  ? 'Task created successfully'
-                  : 'Task updated successfully',
-            ),
+    if (success) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            widget.task == null
+                ? 'Task created successfully'
+                : 'Task updated successfully',
           ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
+        ),
+      );
+    } else {
+      final state = ref.read(addEditTaskNotifierProvider);
+      if (state.errors.isNotEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: ${e.toString()}'),
+            content: Text('Error: ${state.errors.first}'),
             backgroundColor: Colors.red,
           ),
         );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isEditing = widget.task != null;
+    final state = ref.watch(addEditTaskNotifierProvider);
+    final notifier = ref.read(addEditTaskNotifierProvider.notifier);
     final theme = Theme.of(context);
+
+    // Sync controllers with state
+    if (_titleController.text != state.title) {
+      _titleController.text = state.title;
+    }
+    if (_descriptionController.text != state.description) {
+      _descriptionController.text = state.description;
+    }
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: Text(
-          isEditing ? 'Edit Task' : 'New Task',
+          state.isEditing ? 'Edit Task' : 'New Task',
           style: TextStyle(
             color: Colors.grey.shade900,
             fontWeight: FontWeight.w600,
@@ -136,11 +123,9 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
               ),
               textCapitalization: TextCapitalization.sentences,
               maxLength: 100,
-              enabled: !_isLoading,
-              style: TextStyle(
-                color: Colors.grey.shade900,
-                fontSize: 16,
-              ),
+              enabled: !state.isLoading,
+              style: TextStyle(color: Colors.grey.shade900, fontSize: 16),
+              onChanged: (value) => notifier.updateTitle(value),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Please enter a title';
@@ -161,11 +146,9 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
               textCapitalization: TextCapitalization.sentences,
               maxLines: 5,
               maxLength: 500,
-              enabled: !_isLoading,
-              style: TextStyle(
-                color: Colors.grey.shade900,
-                fontSize: 16,
-              ),
+              enabled: !state.isLoading,
+              style: TextStyle(color: Colors.grey.shade900, fontSize: 16),
+              onChanged: (value) => notifier.updateDescription(value),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Please enter a description';
@@ -176,9 +159,9 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
             const SizedBox(height: 20),
             // Date picker
             InkWell(
-              onTap: _isLoading ? null : _selectDate,
+              onTap: state.isLoading ? null : () => _selectDate(notifier),
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(12),
@@ -194,27 +177,27 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        _selectedDate == null
+                        state.dueDate == null
                             ? 'Select due date (optional)'
-                            : 'Due: ${DateFormat('MMM d, yyyy').format(_selectedDate!)}',
+                            : 'Due: ${DateFormat('MMM d, yyyy').format(state.dueDate!)}',
                         style: TextStyle(
-                          color: _selectedDate == null
+                          color: state.dueDate == null
                               ? Colors.grey.shade400
                               : Colors.grey.shade900,
                           fontSize: 16,
                         ),
                       ),
                     ),
-                    if (_selectedDate != null)
+                    if (state.dueDate != null)
                       IconButton(
-                        icon: Icon(Icons.clear, color: Colors.grey.shade600, size: 20),
-                        onPressed: _isLoading
+                        icon: Icon(
+                          Icons.clear,
+                          color: Colors.grey.shade600,
+                          size: 20,
+                        ),
+                        onPressed: state.isLoading
                             ? null
-                            : () {
-                                setState(() {
-                                  _selectedDate = null;
-                                });
-                              },
+                            : () => notifier.clearDueDate(),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),
@@ -224,7 +207,7 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
             ),
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: _isLoading ? null : _handleSave,
+              onPressed: state.isLoading ? null : _handleSave,
               style: ElevatedButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary,
                 foregroundColor: Colors.white,
@@ -233,7 +216,7 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: _isLoading
+              child: state.isLoading
                   ? const SizedBox(
                       height: 20,
                       width: 20,
@@ -243,7 +226,7 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
                       ),
                     )
                   : Text(
-                      isEditing ? 'Update Task' : 'Create Task',
+                      state.isEditing ? 'Update Task' : 'Create Task',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -256,10 +239,11 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
     );
   }
 
-  Future<void> _selectDate() async {
+  Future<void> _selectDate(AddEditTaskNotifier notifier) async {
+    final state = ref.read(addEditTaskNotifierProvider);
     final picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
+      initialDate: state.dueDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) {
@@ -278,10 +262,7 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
     );
 
     if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-      });
+      notifier.updateDueDate(picked);
     }
   }
 }
-
