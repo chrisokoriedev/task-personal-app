@@ -7,7 +7,7 @@ part of 'task_providers.dart';
 // **************************************************************************
 
 String _$localTaskDataSourceHash() =>
-    r'3fe6a2ca544a866ca618d28a327b5013531f902f';
+    r'155b2eab608d25ea752c48a16c4281d5abfe11cd';
 
 /// Provider for LocalTaskDataSource.
 ///
@@ -25,7 +25,7 @@ final localTaskDataSourceProvider =
 );
 
 typedef LocalTaskDataSourceRef = AutoDisposeProviderRef<LocalTaskDataSource>;
-String _$taskRepositoryHash() => r'3631e5d4acc3ea0e8ad62ea64b5718d4fe20f328';
+String _$taskRepositoryHash() => r'b3bd687a9d8fabe7716bb3f7d75377ec3e829e1d';
 
 /// Provider for TaskRepository.
 ///
@@ -43,7 +43,7 @@ final taskRepositoryProvider = AutoDisposeProvider<TaskRepository>.internal(
 
 typedef TaskRepositoryRef = AutoDisposeProviderRef<TaskRepository>;
 String _$completedTasksCountHash() =>
-    r'6d375bc336bc6afb5276f90573958f548b09133d';
+    r'0385850d31bcfdd9186394d01497ecd7a1563f1b';
 
 /// Provider for completed tasks count.
 ///
@@ -60,7 +60,7 @@ final completedTasksCountProvider = AutoDisposeFutureProvider<int>.internal(
 );
 
 typedef CompletedTasksCountRef = AutoDisposeFutureProviderRef<int>;
-String _$allTasksHash() => r'699aca699249c2072ba4802104b3566cf80b84b1';
+String _$allTasksHash() => r'e4e1773d4a1ea1ce679276a8d5f6af787be7b9eb';
 
 /// Provider for all tasks (including completed) - used for search.
 ///
@@ -112,4 +112,4 @@ final taskSearchProvider =
 
 typedef _$TaskSearch = AutoDisposeAsyncNotifier<List<Task>>;
 // ignore_for_file: type=lint
-// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, inference_failure_on_uninitialized_variable, inference_failure_on_function_return_type, inference_failure_on_untyped_parameter, deprecated_member_use_from_same_package
+// ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member

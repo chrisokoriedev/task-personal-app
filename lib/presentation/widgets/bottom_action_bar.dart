@@ -213,7 +213,7 @@ class _CompletedTasksIcon extends ConsumerWidget {
         ),
         tooltip: 'Completed Tasks',
       ),
-      error: (_, __) => IconButton(
+      error: (_, _) => IconButton(
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(

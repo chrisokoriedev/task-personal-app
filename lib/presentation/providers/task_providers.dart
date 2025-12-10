@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../data/datasources/local_task_data_source.dart';
 import '../../data/repositories/task_repository_impl.dart';
@@ -8,13 +9,13 @@ part 'task_providers.g.dart';
 
 /// Provider for LocalTaskDataSource.
 @riverpod
-LocalTaskDataSource localTaskDataSource(LocalTaskDataSourceRef ref) {
+LocalTaskDataSource localTaskDataSource(Ref ref) {
   return LocalTaskDataSource();
 }
 
 /// Provider for TaskRepository.
 @riverpod
-TaskRepository taskRepository(TaskRepositoryRef ref) {
+TaskRepository taskRepository(Ref ref) {
   final dataSource = ref.watch(localTaskDataSourceProvider);
   return TaskRepositoryImpl(dataSource: dataSource);
 }
@@ -107,7 +108,7 @@ class TaskSearch extends _$TaskSearch {
 
 /// Provider for completed tasks count.
 @riverpod
-Future<int> completedTasksCount(CompletedTasksCountRef ref) async {
+Future<int> completedTasksCount(Ref ref) async {
   final repository = ref.watch(taskRepositoryProvider);
   final allTasks = await repository.getAllTasks();
   return allTasks.where((task) => task.isCompleted).length;
@@ -115,7 +116,7 @@ Future<int> completedTasksCount(CompletedTasksCountRef ref) async {
 
 /// Provider for all tasks (including completed) - used for search.
 @riverpod
-Future<List<Task>> allTasks(AllTasksRef ref) async {
+Future<List<Task>> allTasks(Ref ref) async {
   final repository = ref.watch(taskRepositoryProvider);
   return repository.getAllTasks();
 }
