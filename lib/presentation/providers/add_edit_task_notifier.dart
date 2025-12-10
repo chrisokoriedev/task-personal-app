@@ -5,6 +5,9 @@ import 'task_providers.dart';
 
 part 'add_edit_task_notifier.g.dart';
 
+/// Sentinel value to distinguish between "not provided" and "explicitly null" in copyWith.
+const _sentinel = Object();
+
 /// Notifier for managing add/edit task screen state and operations.
 @riverpod
 class AddEditTaskNotifier extends _$AddEditTaskNotifier {
@@ -140,7 +143,7 @@ class AddEditTaskState {
   AddEditTaskState copyWith({
     String? title,
     String? description,
-    DateTime? dueDate,
+    Object? dueDate = _sentinel,
     bool? isEditing,
     Task? originalTask,
     bool? isLoading,
@@ -151,7 +154,7 @@ class AddEditTaskState {
     return AddEditTaskState(
       title: title ?? this.title,
       description: description ?? this.description,
-      dueDate: dueDate ?? this.dueDate,
+      dueDate: dueDate == _sentinel ? this.dueDate : dueDate as DateTime?,
       isEditing: isEditing ?? this.isEditing,
       originalTask: originalTask ?? this.originalTask,
       isLoading: isLoading ?? this.isLoading,
@@ -160,5 +163,8 @@ class AddEditTaskState {
       errors: errors ?? this.errors,
     );
   }
+}
+
+const _sentinel = Object();
 }
 

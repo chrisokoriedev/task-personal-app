@@ -90,7 +90,6 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         title: Text(
           state.isEditing ? 'Edit Task' : 'New Task',
