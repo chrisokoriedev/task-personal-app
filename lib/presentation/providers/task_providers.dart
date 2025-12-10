@@ -48,6 +48,8 @@ class TaskList extends _$TaskList {
     final repository = ref.read(taskRepositoryProvider);
     await repository.createTask(task);
     await refresh();
+    // Invalidate allTasksProvider to update completed count
+    ref.invalidate(allTasksProvider);
   }
 
   /// Updates an existing task.
@@ -55,6 +57,8 @@ class TaskList extends _$TaskList {
     final repository = ref.read(taskRepositoryProvider);
     await repository.updateTask(task);
     await refresh();
+    // Invalidate allTasksProvider to update completed count
+    ref.invalidate(allTasksProvider);
   }
 
   /// Deletes a task.
@@ -63,6 +67,8 @@ class TaskList extends _$TaskList {
     final success = await repository.deleteTask(id);
     if (success) {
       await refresh();
+      // Invalidate allTasksProvider to update completed count
+      ref.invalidate(allTasksProvider);
     }
     return success;
   }
@@ -70,6 +76,7 @@ class TaskList extends _$TaskList {
   /// Toggles task completion status.
   Future<void> toggleTaskCompletion(Task task) async {
     final updatedTask = task.toggleCompletion();
+    // updateTask already invalidates allTasksProvider
     await updateTask(updatedTask);
   }
 }
@@ -108,8 +115,8 @@ class TaskSearch extends _$TaskSearch {
 
 @riverpod
 Future<int> completedTasksCount(CompletedTasksCountRef ref) async {
-  final repository = ref.watch(taskRepositoryProvider);
-  final allTasks = await repository.getAllTasks();
+  // Watch allTasksProvider so it automatically updates when tasks change
+  final allTasks = await ref.watch(allTasksProvider.future);
   return allTasks.where((task) => task.isCompleted).length;
 }
 

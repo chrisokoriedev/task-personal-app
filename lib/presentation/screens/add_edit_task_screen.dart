@@ -25,8 +25,9 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.task?.title ?? '');
-    _descriptionController =
-        TextEditingController(text: widget.task?.description ?? '');
+    _descriptionController = TextEditingController(
+      text: widget.task?.description ?? '',
+    );
     _selectedDate = widget.task?.dueDate;
   }
 
@@ -63,10 +64,9 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
         await taskListNotifier.createTask(newTask);
       } else {
         // Update existing task
-        final updatedTask = widget.task!.updateContent(
-          title: title,
-          description: description,
-        ).copyWith(dueDate: _selectedDate);
+        final updatedTask = widget.task!
+            .updateContent(title: title, description: description)
+            .copyWith(dueDate: _selectedDate);
         await taskListNotifier.updateTask(updatedTask);
       }
 
@@ -140,10 +140,7 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
               textCapitalization: TextCapitalization.sentences,
               maxLength: 100,
               enabled: !_isLoading,
-              style: TextStyle(
-                color: Colors.grey.shade900,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.grey.shade900, fontSize: 16),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Please enter a title';
@@ -165,10 +162,7 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
               maxLines: 5,
               maxLength: 500,
               enabled: !_isLoading,
-              style: TextStyle(
-                color: Colors.grey.shade900,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.grey.shade900, fontSize: 16),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Please enter a description';
@@ -181,7 +175,10 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
             InkWell(
               onTap: _isLoading ? null : _selectDate,
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(12),
@@ -190,8 +187,12 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.calendar_today,
-                      color: Colors.grey.shade600,
+                      _selectedDate == null
+                          ? Icons.calendar_today
+                          : Icons.calendar_month,
+                      color: _selectedDate == null
+                          ? Colors.grey.shade600
+                          : theme.colorScheme.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 12),
@@ -209,21 +210,19 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
                       ),
                     ),
                     if (_selectedDate != null)
-                      IconButton(
-                        icon: Icon(
-                          Icons.clear,
-                          color: Colors.grey.shade600,
-                          size: 20,
-                        ),
-                        onPressed: _isLoading
+                      InkWell(
+                        onTap: _isLoading
                             ? null
                             : () {
                                 setState(() {
                                   _selectedDate = null;
                                 });
                               },
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
+                        child: Icon(
+                          Icons.clear,
+                          color: Colors.grey.shade600,
+                          size: 20,
+                        ),
                       ),
                   ],
                 ),
