@@ -138,23 +138,61 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           ),
         ],
       ),
-      body: tasksAsync.when(
-        data: (tasks) {
-          if (tasks.isEmpty) {
-            return EmptyStateWidget(
-              onAddTask: _navigateToAddTask,
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              await ref.read(taskListProvider.notifier).refresh();
+      body: Column(
+        children: [
+          // Date selector
+          DateSelectorWidget(
+            selectedDate: _selectedDate,
+            onDateSelected: (date) {
+              setState(() {
+                _selectedDate = date;
+              });
             },
-            child: ListView.builder(
-              itemCount: tasks.length,
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              itemBuilder: (context, index) {
-                final task = tasks[index];
+          ),
+          // Task list
+          Expanded(
+            child: tasksAsync.when(
+              data: (tasks) {
+                // Filter tasks by selected date
+                final filteredTasks = tasks.where((task) {
+                  // Show tasks without due date on today
+                  if (task.dueDate == null) {
+                    final today = DateTime.now();
+                    final isToday = _selectedDate.year == today.year &&
+                        _selectedDate.month == today.month &&
+                        _selectedDate.day == today.day;
+                    return isToday;
+                  }
+                  
+                  // Show tasks with due date matching selected date
+                  final taskDate = DateTime(
+                    task.dueDate!.year,
+                    task.dueDate!.month,
+                    task.dueDate!.day,
+                  );
+                  final selectedDate = DateTime(
+                    _selectedDate.year,
+                    _selectedDate.month,
+                    _selectedDate.day,
+                  );
+                  return taskDate.isAtSameMomentAs(selectedDate);
+                }).toList();
+
+                if (filteredTasks.isEmpty) {
+                  return EmptyStateWidget(
+                    onAddTask: _navigateToAddTask,
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    await ref.read(taskListProvider.notifier).refresh();
+                  },
+                  child: ListView.builder(
+                    itemCount: filteredTasks.length,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    itemBuilder: (context, index) {
+                      final task = filteredTasks[index];
                 return Dismissible(
                   key: Key(task.id),
                   direction: DismissDirection.endToStart,
@@ -189,37 +227,40 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                     onDelete: () => _handleDeleteTask(task),
                   ),
                 );
+                    },
+                  ),
+                );
               },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error loading tasks',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      error.toString(),
+                      style: Theme.of(context).textTheme.bodySmall,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        ref.read(taskListProvider.notifier).refresh();
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 16),
-              Text(
-                'Error loading tasks',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                error.toString(),
-                style: Theme.of(context).textTheme.bodySmall,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  ref.read(taskListProvider.notifier).refresh();
-                },
-                child: const Text('Retry'),
-              ),
-            ],
           ),
-        ),
+        ],
       ),
       bottomNavigationBar: ClipRRect(
         child: BackdropFilter(
