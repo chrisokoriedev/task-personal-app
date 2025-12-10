@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/task_providers.dart';
 import '../widgets/task_item.dart';
-import '../../domain/entities/task.dart';
 
 /// Screen displaying completed tasks.
 class CompletedTasksScreen extends ConsumerWidget {

@@ -36,7 +36,9 @@ class TaskList extends _$TaskList {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
       final repository = ref.read(taskRepositoryProvider);
-      return repository.getAllTasks();
+      final allTasks = await repository.getAllTasks();
+      // Filter out completed tasks - only show incomplete tasks
+      return allTasks.where((task) => !task.isCompleted).toList();
     });
   }
 

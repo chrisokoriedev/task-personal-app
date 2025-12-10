@@ -5,6 +5,7 @@ import '../providers/task_providers.dart';
 import '../widgets/task_item.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/task_search_bar.dart';
+import '../widgets/date_selector_widget.dart';
 import 'add_edit_task_screen.dart';
 import 'completed_tasks_screen.dart';
 import '../../domain/entities/task.dart';
@@ -20,6 +21,7 @@ class TaskListScreen extends ConsumerStatefulWidget {
 class _TaskListScreenState extends ConsumerState<TaskListScreen> {
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
+  DateTime _selectedDate = DateTime.now();
 
   @override
   void dispose() {
