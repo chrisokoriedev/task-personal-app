@@ -27,6 +27,7 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.light(
+        
           primary: Colors.blue.shade600,
           secondary: Colors.blue.shade400,
           surface: Colors.white,
@@ -36,7 +37,8 @@ class MainApp extends StatelessWidget {
           onSurface: Colors.grey.shade900,
           onError: Colors.white,
         ),
-        scaffoldBackgroundColor: Colors.grey.shade50,
+        scaffoldBackgroundColor: Colors.white,
+        
         appBarTheme: AppBarTheme(
           elevation: 0,
           backgroundColor: Colors.white,

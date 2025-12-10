@@ -1,13 +1,14 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/task_providers.dart';
-import '../widgets/task_item.dart';
-import '../widgets/empty_state_widget.dart';
 import '../widgets/task_search_bar.dart';
 import '../widgets/date_selector_widget.dart';
+import '../widgets/task_list_content.dart';
+import '../widgets/bottom_action_bar.dart';
+import '../widgets/dismissible_task_item.dart';
+import '../widgets/empty_state_widget.dart';
+import '../widgets/error_state_widget.dart';
 import 'add_edit_task_screen.dart';
-import 'completed_tasks_screen.dart';
 import '../../domain/entities/task.dart';
 
 /// Main screen displaying the list of tasks.
@@ -101,14 +102,47 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     );
   }
 
+  Widget _buildSearchResults() {
+    final searchAsync = ref.watch(taskSearchProvider);
+    
+    return searchAsync.when(
+      data: (tasks) {
+        if (tasks.isEmpty) {
+          return EmptyStateWidget(
+            onAddTask: _navigateToAddTask,
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () async {
+            await ref.read(taskListProvider.notifier).refresh();
+          },
+          child: ListView.builder(
+            itemCount: tasks.length,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemBuilder: (context, index) {
+              final task = tasks[index];
+              return DismissibleTaskItem(
+                task: task,
+                onTap: () => _navigateToEditTask(task),
+                onToggleComplete: () {
+                  ref
+                      .read(taskListProvider.notifier)
+                      .toggleTaskCompletion(task);
+                },
+                onDelete: _handleDeleteTask,
+              );
+            },
+          ),
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => ErrorStateWidget(errorMessage: error.toString()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final taskListAsync = ref.watch(taskListProvider);
-    final searchAsync = ref.watch(taskSearchProvider);
-
-    // Use search results if searching, otherwise use full list
-    final tasksAsync = _isSearching ? searchAsync : taskListAsync;
-
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
@@ -151,325 +185,24 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           ),
           // Task list
           Expanded(
-            child: tasksAsync.when(
-              data: (tasks) {
-                // Filter tasks by selected date
-                final filteredTasks = tasks.where((task) {
-                  // Show tasks without due date on today
-                  if (task.dueDate == null) {
-                    final today = DateTime.now();
-                    final isToday = _selectedDate.year == today.year &&
-                        _selectedDate.month == today.month &&
-                        _selectedDate.day == today.day;
-                    return isToday;
-                  }
-                  
-                  // Show tasks with due date matching selected date
-                  final taskDate = DateTime(
-                    task.dueDate!.year,
-                    task.dueDate!.month,
-                    task.dueDate!.day,
-                  );
-                  final selectedDate = DateTime(
-                    _selectedDate.year,
-                    _selectedDate.month,
-                    _selectedDate.day,
-                  );
-                  return taskDate.isAtSameMomentAs(selectedDate);
-                }).toList();
-
-                if (filteredTasks.isEmpty) {
-                  return EmptyStateWidget(
-                    onAddTask: _navigateToAddTask,
-                  );
-                }
-
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    await ref.read(taskListProvider.notifier).refresh();
-                  },
-                  child: ListView.builder(
-                    itemCount: filteredTasks.length,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemBuilder: (context, index) {
-                      final task = filteredTasks[index];
-                return Dismissible(
-                  key: Key(task.id),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade400,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 20),
-                    child: const Icon(
-                      Icons.delete,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-                  confirmDismiss: (direction) async {
-                    return await _handleDeleteTask(task);
-                  },
-                  onDismissed: (direction) {
-                    // Task is already deleted in confirmDismiss
-                  },
-                  child: TaskItem(
-                    task: task,
-                    onTap: () => _navigateToEditTask(task),
-                    onToggleComplete: () {
+            child: _isSearching
+                ? _buildSearchResults()
+                : TaskListContent(
+                    selectedDate: _selectedDate,
+                    onTaskTap: _navigateToEditTask,
+                    onToggleComplete: (task) {
                       ref
                           .read(taskListProvider.notifier)
                           .toggleTaskCompletion(task);
                     },
-                    onDelete: () => _handleDeleteTask(task),
+                    onDelete: _handleDeleteTask,
+                    onAddTask: _navigateToAddTask,
                   ),
-                );
-                    },
-                  ),
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Error loading tasks',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      error.toString(),
-                      style: Theme.of(context).textTheme.bodySmall,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        ref.read(taskListProvider.notifier).refresh();
-                      },
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ),
         ],
       ),
-      bottomNavigationBar: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.85),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: SafeArea(
-              child: Row(
-                children: [
-                  // Smaller Create button
-                  ElevatedButton.icon(
-                    onPressed: _navigateToAddTask,
-                    icon: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                      child: const Icon(
-                        Icons.add,
-                        size: 14,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    label: const Text(
-                      'Create',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.grey.shade200,
-                      foregroundColor: Colors.grey.shade900,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  // Done tasks icon with badge
-                  Consumer(
-                    builder: (context, ref, child) {
-                      final completedCountAsync = ref.watch(completedTasksCountProvider);
-                      return completedCountAsync.when(
-                        data: (count) => Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                // Navigate to completed tasks screen
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => const CompletedTasksScreen(),
-                                  ),
-                                );
-                              },
-                              icon: SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: Stack(
-                                  clipBehavior: Clip.none,
-                                  children: [
-                                    // Bottom card
-                                    Positioned(
-                                      left: 4,
-                                      top: 6,
-                                      child: Container(
-                                        width: 16,
-                                        height: 16,
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey.shade300,
-                                          borderRadius: BorderRadius.circular(3),
-                                          border: Border.all(
-                                            color: Colors.grey.shade400,
-                                            width: 1,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    // Middle card
-                                    Positioned(
-                                      left: 2,
-                                      top: 3,
-                                      child: Container(
-                                        width: 16,
-                                        height: 16,
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey.shade200,
-                                          borderRadius: BorderRadius.circular(3),
-                                          border: Border.all(
-                                            color: Colors.grey.shade400,
-                                            width: 1,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    // Top card with checkmark
-                                    Positioned(
-                                      left: 0,
-                                      top: 0,
-                                      child: Container(
-                                        width: 16,
-                                        height: 16,
-                                        decoration: BoxDecoration(
-                                          color: Colors.grey.shade100,
-                                          borderRadius: BorderRadius.circular(3),
-                                          border: Border.all(
-                                            color: Colors.grey.shade400,
-                                            width: 1,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          Icons.check,
-                                          size: 10,
-                                          color: Colors.grey.shade700,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              tooltip: 'Completed Tasks',
-                            ),
-                            // Badge showing count
-                            if (count > 0)
-                              Positioned(
-                                right: 4,
-                                top: 4,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.shade600,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  constraints: const BoxConstraints(
-                                    minWidth: 18,
-                                    minHeight: 18,
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      count > 99 ? '99+' : count.toString(),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                        loading: () => IconButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const CompletedTasksScreen(),
-                              ),
-                            );
-                          },
-                          icon: Icon(
-                            Icons.assignment,
-                            color: Colors.grey.shade600,
-                          ),
-                          tooltip: 'Completed Tasks',
-                        ),
-                        error: (_, __) => IconButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const CompletedTasksScreen(),
-                              ),
-                            );
-                          },
-                          icon: Icon(
-                            Icons.assignment,
-                            color: Colors.grey.shade600,
-                          ),
-                          tooltip: 'Completed Tasks',
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
+      bottomNavigationBar: BottomActionBar(
+        onCreateTask: _navigateToAddTask,
       ),
     );
   }
