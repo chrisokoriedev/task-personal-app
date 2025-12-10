@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entities/task.dart';
 import 'task_providers.dart';
@@ -163,8 +162,5 @@ class AddEditTaskState {
       errors: errors ?? this.errors,
     );
   }
-}
-
-const _sentinel = Object();
 }
 

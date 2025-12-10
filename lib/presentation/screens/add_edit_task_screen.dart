@@ -160,7 +160,10 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
             InkWell(
               onTap: state.isLoading ? null : () => _selectDate(notifier),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(12),
@@ -169,8 +172,8 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.calendar_today,
-                      color: Colors.grey.shade600,
+                    state.dueDate == null ? Icons.calendar_today : Icons.calendar_month,
+                      color: state.dueDate == null ? Colors.grey.shade600 :theme.colorScheme.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 12),
@@ -188,17 +191,13 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
                       ),
                     ),
                     if (state.dueDate != null)
-                      IconButton(
-                        icon: Icon(
+                      InkWell(
+                        onTap: () => notifier.clearDueDate(),
+                        child: Icon(
                           Icons.clear,
                           color: Colors.grey.shade600,
                           size: 20,
                         ),
-                        onPressed: state.isLoading
-                            ? null
-                            : () => notifier.clearDueDate(),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
                       ),
                   ],
                 ),
