@@ -15,13 +15,24 @@ class TaskSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
+      style: TextStyle(
+        color: Colors.grey.shade900,
+        fontSize: 16,
+      ),
       decoration: InputDecoration(
         hintText: 'Search tasks...',
+        hintStyle: TextStyle(color: Colors.grey.shade400),
         border: InputBorder.none,
-        prefixIcon: const Icon(Icons.search),
+        prefixIcon: Icon(
+          Icons.search,
+          color: Colors.grey.shade600,
+        ),
         suffixIcon: controller.text.isNotEmpty
             ? IconButton(
-                icon: const Icon(Icons.clear),
+                icon: Icon(
+                  Icons.clear,
+                  color: Colors.grey.shade600,
+                ),
                 onPressed: () {
                   controller.clear();
                   onChanged('');

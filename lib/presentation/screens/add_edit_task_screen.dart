@@ -96,26 +96,47 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.task != null;
+    final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text(isEditing ? 'Edit Task' : 'New Task'),
+        title: Text(
+          isEditing ? 'Edit Task' : 'New Task',
+          style: TextStyle(
+            color: Colors.grey.shade900,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           children: [
+            Text(
+              'Task Details',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade900,
+              ),
+            ),
+            const SizedBox(height: 24),
             TextFormField(
               controller: _titleController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Title',
                 hintText: 'Enter task title',
-                border: OutlineInputBorder(),
+                labelStyle: TextStyle(color: Colors.grey.shade700),
+                hintStyle: TextStyle(color: Colors.grey.shade400),
               ),
               textCapitalization: TextCapitalization.sentences,
               maxLength: 100,
               enabled: !_isLoading,
+              style: TextStyle(
+                color: Colors.grey.shade900,
+                fontSize: 16,
+              ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Please enter a title';
@@ -123,19 +144,24 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
                 return null;
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             TextFormField(
               controller: _descriptionController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Description',
                 hintText: 'Enter task description',
-                border: OutlineInputBorder(),
+                labelStyle: TextStyle(color: Colors.grey.shade700),
+                hintStyle: TextStyle(color: Colors.grey.shade400),
                 alignLabelWithHint: true,
               ),
               textCapitalization: TextCapitalization.sentences,
               maxLines: 5,
               maxLength: 500,
               enabled: !_isLoading,
+              style: TextStyle(
+                color: Colors.grey.shade900,
+                fontSize: 16,
+              ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Please enter a description';
@@ -143,19 +169,33 @@ class _AddEditTaskScreenState extends ConsumerState<AddEditTaskScreen> {
                 return null;
               },
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             ElevatedButton(
               onPressed: _isLoading ? null : _handleSave,
               style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: _isLoading
                   ? const SizedBox(
                       height: 20,
                       width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
                     )
-                  : Text(isEditing ? 'Update Task' : 'Create Task'),
+                  : Text(
+                      isEditing ? 'Update Task' : 'Create Task',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
           ],
         ),

@@ -103,16 +103,29 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     final tasksAsync = _isSearching ? searchAsync : taskListAsync;
 
     return Scaffold(
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.white,
         title: _isSearching
             ? TaskSearchBar(
                 controller: _searchController,
                 onChanged: _onSearchChanged,
               )
-            : const Text('Tasks'),
+            : Text(
+                'Tasks',
+                style: TextStyle(
+                  color: Colors.grey.shade900,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 24,
+                ),
+              ),
         actions: [
           IconButton(
-            icon: Icon(_isSearching ? Icons.close : Icons.search),
+            icon: Icon(
+              _isSearching ? Icons.close : Icons.search,
+              color: Colors.grey.shade700,
+            ),
             onPressed: _toggleSearch,
             tooltip: _isSearching ? 'Close search' : 'Search tasks',
           ),
@@ -132,7 +145,7 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
             },
             child: ListView.builder(
               itemCount: tasks.length,
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.symmetric(vertical: 8),
               itemBuilder: (context, index) {
                 final task = tasks[index];
                 return TaskItem(
@@ -177,9 +190,58 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToAddTask,
-        child: const Icon(Icons.add),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _navigateToAddTask,
+                  icon: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    child: const Icon(
+                      Icons.add,
+                      size: 16,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  label: const Text(
+                    'Create',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey.shade200,
+                    foregroundColor: Colors.grey.shade900,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
