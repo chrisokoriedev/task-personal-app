@@ -174,12 +174,38 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
       body: Column(
         children: [
           // Date selector
-          DateSelectorWidget(
-            selectedDate: _selectedDate,
-            onDateSelected: (date) {
-              setState(() {
-                _selectedDate = date;
-              });
+          Consumer(
+            builder: (context, ref, child) {
+              final allTasksAsync = ref.watch(allTasksProvider);
+              return allTasksAsync.when(
+                data: (tasks) => DateSelectorWidget(
+                  selectedDate: _selectedDate,
+                  onDateSelected: (date) {
+                    setState(() {
+                      _selectedDate = date;
+                    });
+                  },
+                  tasks: tasks,
+                ),
+                loading: () => DateSelectorWidget(
+                  selectedDate: _selectedDate,
+                  onDateSelected: (date) {
+                    setState(() {
+                      _selectedDate = date;
+                    });
+                  },
+                  tasks: const [],
+                ),
+                error: (_, __) => DateSelectorWidget(
+                  selectedDate: _selectedDate,
+                  onDateSelected: (date) {
+                    setState(() {
+                      _selectedDate = date;
+                    });
+                  },
+                  tasks: const [],
+                ),
+              );
             },
           ),
           // Task list
