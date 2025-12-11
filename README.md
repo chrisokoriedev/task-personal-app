@@ -33,6 +33,10 @@ This separation ensures maintainability, testability, and scalability.
 - **Freezed**: Immutable data classes and union types
 - **UUID**: Unique task identification
 
+## Download
+
+📱 [Download APK](https://drive.google.com/file/d/1oIwva6tkxeMRi_VSVcQ3iMLRJroEmnt4/view?usp=sharing)
+
 ## Getting Started
 
 1. Install dependencies: `flutter pub get`
